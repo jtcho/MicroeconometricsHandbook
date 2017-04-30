@@ -1,0 +1,243 @@
+
+%\documentclass{article}
+\documentclass[16pt]{article}
+\usepackage[tmargin=1in, bmargin=1in]{geometry}
+\usepackage{amsmath, amsfonts, amsthm, amssymb, framed, enumerate}
+\RequirePackage{parskip}
+
+\setlength{\parindent}{0cm}
+
+\newcommand{\bh}{\hat{\beta}}
+\newcommand{\argmin}{\text{argmin}}
+\newcommand{\norm}{\mathcal{N}}
+\newcommand{\plim}{\text{plim}\; }
+\newcommand{\Var}{\text{Var}}
+
+\begin{document}
+
+\title{Microecononometrics Cheatsheet}
+\author{J.T. Cho [joncho@seas.upenn.edu]}
+\date{}
+
+\maketitle
+
+\section*{The Basics}
+
+\textbf{PDF of Normal Distribution}
+$$X \sim \mathcal{N}(\mu, \sigma^2)\;:\; f(X) = \frac{1}{\sigma \sqrt{2\pi}} \exp\bigg(-\frac{(X - \mu)^2}{2\sigma^2}\bigg)$$
+
+\textbf{Variance of a Random Variable}
+$$\text{Var}(X) = E[(X - \mu)^2] = E[X^2] - E^2[X]$$
+
+\textbf{Independence of R.V.'s}
+\begin{align*}
+f(X, Y) =& f(X)f(Y) \\&\implies E[X|Y] = E[X]\\&\implies \text{Cov}(X,Y) = 0
+\end{align*}
+
+\textbf{Correlated R.V.'s}
+$$\text{Cov}(X,Y) = E[XY] - \mu_X \mu_Y$$
+If $\text{Cov}(X,Y) = 0$, $X, Y$ are uncorrelated.\\
+
+\textbf{Properties of Estimators}
+\begin{enumerate}[(i)]
+  \item unbiasedness, $E[\hat{\mu_y}] = \mu_y$
+  \item consistency, $\forall \epsilon > 0,\; \Pr(\mid \hat{\mu_y} - \mu_y \mid > \epsilon) \rightarrow 0 \text{ as } n\rightarrow\infty$
+\end{enumerate}
+
+\section*{Ordinary Least Squares (Simple)}
+
+\textbf{Identifying Assumptions}
+
+\begin{itemize}
+\item nonstochastic $x_i$, s.t. only source of random variation in $y_i$ is $\epsilon_i$
+\item mean-zero; $E[\epsilon] = \mathbf{0}$
+\begin{itemize}
+  \item $\epsilon \sim \mathcal{N}(0, \sigma^2 I)$
+\end{itemize}
+\item homoskedasticity; $E[\epsilon_i^2] = \sigma^2$
+\item $\text{Cov}(\epsilon_i, \epsilon_j) = 0\;\forall\;i \neq j$
+\end{itemize}
+
+\textbf{Derivation of Matrix-formulation of OLS (Stochastic Regressors)}
+
+$$\bh = \argmin_{\beta} \epsilon'\epsilon = \argmin_{\beta} (Y - X\beta)'(Y - X\beta)$$
+\begin{align*}
+  \frac{\partial}{\partial \beta} &= 2X' (Y - X \beta) = 0\\
+    &X'Y - X'X\beta = 0\\
+    &X'Y = X'X\beta\\
+    &\beta = (X'X)^{-1} X'Y
+\end{align*}
+
+Since $\epsilon = Y - X\beta$, the F.O.C. implies that $X'\epsilon = 0$. If $X$ has a column of $1$'s corresponding to a constant term, then $X'$ in the expression implies that 
+$$\sum_{i=1}^n \epsilon_i = 0$$
+Then, the mean of the residuals is $0$. 
+
+\textbf{Consistency of OLS Estimator}
+
+We give the asymptotic distribution of $\bh - \beta$.
+
+\begin{align*}
+  \bh - \beta &= (X'X)^{-1}X'Y - \beta\\
+              &= (X'X)^{-1} X'(X\beta + \epsilon) - \beta\\
+              &= \beta + (X'X)^{-1}X'\epsilon - \beta\\
+              &= (X'X)^{-1}X'\epsilon
+\end{align*}
+Since $\epsilon \sim \norm(0, \sigma^2 I)$, observe,
+\begin{align*}
+  \bh - \beta &\sim \norm(0, (X'X)^{-1} X' \sigma^2 I X(X'X)^{-1})\\
+              &\sim \norm(0, \sigma^2 (X'X)^{-1}X'X(X'X)^{-1})\\
+              &\sim \norm(0, \sigma^2(X'X)^{-1})
+\end{align*}
+
+\underline{Estimator for $\sigma^2$ for the variance-covariance matrix}
+
+$$\hat{\sigma}^2 = \frac{1}{n-k} \sum_{i=1}^n \hat{\epsilon}_i^2$$
+
+\textbf{Heteroskedasticity}
+
+Relax assumption that $E[\epsilon_i^2] = \sigma^2$ for all $i$. Then, let $E[\epsilon \epsilon'] = \Omega$,
+$$\Omega = \begin{pmatrix} 
+  \sigma_1^2 & \dots & 0\\
+  \vdots & \ddots & \vdots\\
+  0 & \dots & \sigma_n^2
+\end{pmatrix}$$
+
+The robust var-cov estimator is $$\hat{\Sigma}_{robust} = (\sum_{i=1}^n x_i x_i')^{-1} \sum_{i=1}^n x_i x_i' \hat{\epsilon}_i^2(\sum_{i=1}^n x_i X_i')^{-1}$$
+
+\section*{Generally Useful Techniques}
+
+\textbf{Convergence}
+
+Suppose we have the sequence of random variables $\{ X_i \}_{i=1}^n$ with sample mean $\frac{1}{n} \sum_{i=1}^n X_i$.
+
+\underline{Convergence in probability}
+
+For all $\epsilon > 0$, $$\lim_{n \to \infty} \Pr(\mid X_n - X \mid < \epsilon) = 1$$
+
+Alternatively, is written $\plim X_n = X$.
+
+Implies convergence in distribution.
+
+\underline{Convergence in mean-square}
+
+$$\lim_{n \to \infty} E[(X_n - X)^2] = 0$$
+
+Implies convergence in probability.
+
+\underline{Convergence almost surely}
+
+For all $\epsilon > 0$, $$\lim_{n\to\infty} \Pr(\mid X_m - X\mid < \epsilon\;\forall\; m \geq n) = 1$$
+
+In other words, $X_m$ converges to $X$ for some $n$ and stays small for all larger $n$.
+
+Implies convergence in probability.
+
+\underline{Convergence in distribution}
+
+$$\lim_{n\to\infty} F_n(X_n) = F(X) \text{ for all $X$ such that $F(X)$ is continuous}$$ 
+
+Let $F_i(x)$ be the CDF of $X$.
+
+\textbf{Slutsky's Theorem}
+
+If $X_n \to_D X$ and $A_n \to_P a$ for constant $a$, then
+
+\begin{enumerate}[(i)]
+  \item $A_n X_n \to_D aX$
+  \item $A_n + X_n \to_D a + X$
+  \item $\frac{X_n}{A_n} \to_D \frac{X}{a}$
+\end{enumerate}
+
+\textbf{Mann-Wald/Continuous-Mapping Theorem}
+
+Let $g$ be a continuous function. Then,
+
+\begin{enumerate}[(a)]
+  \item $X_n \to_D X \implies g(X_n) \to_D g(X)$
+  \item $X_n \to_P X \implies g(X_n) \to_P g(X)$
+  \item $X_n \to_{A.S.} X \implies g(X_n) \to_{A.S.} g(X)$
+\end{enumerate}
+
+In other words, continuous functions are \emph{limit preserving} even if arguments are sequences of R.V.'s.
+
+\textbf{Chebyshev's Weak Law of Large Numbers}
+
+If $\{Y_i\}_i^n$ are i.i.d. with $E[Y_i] = \mu_Y, \Var(Y_i) = \sigma_Y^2 < \infty$, then $\bar{Y} \to_P \mu_Y$.
+
+\textbf{Lindeberg-Levy Central Limit Theorem}
+For i.i.d. R.V.'s $\{X_i\}_i^n$ with mean $\mu$ and variance $\sigma^2$, consider the sample mean
+$$\bar{X}_n = \frac{1}{n} \sum_{i=1}^n X_i$$
+
+$$E[\bar{X}_n] = \mu$$
+
+$$\Var(\bar{X}_n) = \frac{\sigma^2}{n}$$
+
+Then, defining the $Z$ statistic, $Z_n$,
+$$Z_n = \frac{\bar{X}_n - \mu}{\sqrt{\frac{\sigma^2}{n}}}$$
+
+The LLCLT states that the R.V.'s $Z_n \to_D \norm(0,1)$
+
+\textbf{Law of Iterated Expectations}
+
+$$E[X' \epsilon] = E[E[X' \epsilon]] = E[X' E[\epsilon \mid X]]$$
+
+\section*{OLS with Stochastic Regressors}
+
+\textbf{Identifying Assumptions}
+
+Allow $X$ to be random. $\epsilon_i$ are i.i.d., with
+\begin{align*}
+  E[\epsilon_i\mid x_i] = 0, E[\epsilon_i^2\mid x_i] = \sigma^2\\
+  E[x_i x_i'] < \infty, E[x_i x_i']^{-1} \text{ exists}\\
+  E[\epsilon_i \epsilon_j \mid X] = 0\;\forall\; i \neq j
+\end{align*}
+
+\textbf{Unbiasedness}
+
+Observe that expectations are taken over $x_i$ and $\epsilon_i$.
+\begin{align*}
+  E[\bh] &= E[(X'X)^{-1}X'Y]\\
+    &= E[(X'X)^{-1}X'(X\beta + \epsilon)]\\
+    &= E[\beta + (X'X)^{-1}X'\epsilon]\\
+    &= \beta + E[(X'X)^{-1} X'\epsilon]\\
+    &= \beta + E[(X'X)^{-1}X'E[\epsilon\mid X]]\\
+    &= \beta
+\end{align*}
+
+\textbf{Asymptotic Distribution}
+
+Consider the R.V. sequence $\{x_i \epsilon_i\}_{i=1}^n$.
+
+Observe that $E[x_i \epsilon_i] = 0$, applying the L.I.E.
+\begin{align*}
+  \Var(x_i \epsilon_i) &= E[x_i^2 \epsilon_i^2]\\
+      &= E[x_i^2 E[\epsilon_i^2 \mid x_i]]\\
+      &= E[x_i x_i' \cdot \sigma^2]\\
+      &= E[x_i x_i'] \sigma^2
+\end{align*}
+
+\begin{align*}
+\bh - \beta &= (X'X)^{-1}(X'\epsilon)\\
+  &= [\sum_{i=1}^n x_i x_i']^{-1}[\sum_{i=1}^n x_i\epsilon_i]\\
+  &= [\frac{1}{n} \sum_{i=1}^n x_i x_i']^{-1}[\frac{1}{n}\sum_{i=1}^n x_i\epsilon_i]
+\end{align*}
+Observe that for any constant $c$, $(cX)^{-1} = \frac{1}{c}X^{-1}$.
+
+Consider the following expression:
+$$\sqrt{n}(\bh - \beta) = [\frac{1}{n} \sum_{i=1}^n x_i x_i']^{-1}[\frac{1}{n} \cdot \sqrt{n} \sum_{i=1}^n x_i\epsilon_i]$$
+Applying the LLCLT to the second term gives 
+$$\frac{1}{\sqrt{n}} \sum_{i=1}^n x_i \epsilon_i \sim \norm(0, \sigma^2 E[x_i x_i'])$$
+
+Since $x_i'$ is a $1 \times k$ vector, the quantity $E[x_i x_i']$ is a matrix. Noting that by assumption $\plim \frac{1}{n} \sum_{i=1}^n x_i x_i' = E[x_i x_i']$ and applying Slutsky's theorem, 
+\begin{align*}
+  \sqrt{n}(\bh - \beta) &\sim \norm(0, \sigma^2 E[x_i x_i']^{-1} E[x_i x_i'] E[x_i x_i']^{-1})\\
+  &\sim \norm(0, \sigma^2 E[x_i x_i']^{-1})
+\end{align*}
+
+(It is helpful to remember that convergence in probability implies convergence in distribution, which is necessary for the LLCLT).
+
+\textbf{Consistency}
+
+From the above expression for $\bh - \beta$, it immediately follows from the WLLN that the second term $\frac{1}{n} \sum_{i=1}^n x_i \epsilon_i \to_P 0$. Then, applying Slutsky's theorem, the product converges in probability to $0$.
+
+\end{document}
