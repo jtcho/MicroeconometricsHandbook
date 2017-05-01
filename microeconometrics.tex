@@ -8,10 +8,12 @@
 \setlength{\parindent}{0cm}
 
 \newcommand{\bh}{\hat{\beta}}
+\newcommand{\ah}{\hat{\alpha}}
 \newcommand{\argmin}{\text{argmin}}
 \newcommand{\norm}{\mathcal{N}}
 \newcommand{\plim}{\text{plim}\; }
 \newcommand{\Var}{\text{Var}}
+\newcommand{\sh}{\hat{\sigma}^2}
 
 \begin{document}
 
@@ -106,7 +108,7 @@ $$\Omega = \begin{pmatrix}
   0 & \dots & \sigma_n^2
 \end{pmatrix}$$
 
-The robust var-cov estimator is $$\hat{\Sigma}_{robust} = (\sum_{i=1}^n x_i x_i')^{-1} \sum_{i=1}^n x_i x_i' \hat{\epsilon}_i^2(\sum_{i=1}^n x_i X_i')^{-1}$$
+The robust var-cov estimator is $$\hat{\Sigma}_{robust} = (\sum_{i=1}^n x_i x_i')^{-1} \sum_{i=1}^n x_i x_i' \hat{\epsilon}_i^2(\sum_{i=1}^n x_i x_i')^{-1}$$
 
 \section*{Generally Useful Techniques}
 
@@ -243,5 +245,72 @@ Since $x_i'$ is a $1 \times k$ vector, the quantity $E[x_i x_i']$ is a matrix. N
 \textbf{Consistency}
 
 From the above expression for $\bh - \beta$, it immediately follows from the WLLN that the second term $\frac{1}{n} \sum_{i=1}^n x_i \epsilon_i \to_P 0$. Then, applying Slutsky's theorem, the product converges in probability to $0$.
+
+\section*{OLS Topics}
+
+\subsection*{Omitted Variables}
+
+Suppose true model is $Y = X\beta + Z\gamma + u$, but we can only estimate $Y = X\alpha + \epsilon$.
+
+Assume that $E[u \mid X, Z] = 0$ and $\Var(u\mid X, Z) = \sigma^2 I$.
+
+Then, our estimator $\ah$ is
+\begin{align*}
+  \ah &= (X'X)^{-1}X'Y\\
+      &= (X'X)^{-1}X'(X\beta + Z\gamma + u)\\
+      &= \beta + (X'X)^{-1}X'Z\gamma + (X'X^{-1})Xu
+\end{align*}
+\textbf{Consistency of $\ah$ wrt $\beta$}
+
+Want to check whether $\plim \ah - \beta = 0$, or what conditions would make this true. Note that for brevity the plims shown are wrt $n \to \infty$.
+$$\plim \ah - \beta = \plim [(X'X)^{-1}X' Z \gamma] + \plim [(X'X^{-1})X'u]$$
+
+\begin{align*}
+    \plim [(X'X)^{-1}X' Z \gamma] &= \plim [(\frac{1}{n} \sum_{i=1}^n x_i x_i')^{-1} (\frac{1}{n} \sum_{i=1}^n x_i z_i') \gamma]\\
+    &\to_P (E[x_i x_i'])^{-1} E[x_i z_i']
+\end{align*}
+\begin{align*}
+  \plim [(X'X)^{-1} X' u] &= \plim [(\frac{1}{n} \sum_{i=1}^n x_i x_i')^{-1} (\frac{1}{n} \sum_{i=1}^n x_i u_i') \gamma]\\
+    &\to_P (E[x_i x_i'])^{-1} E[x_i u_i']\\
+    &= 0 & E[x_i u_i'] = E[x_i E[u_i'\mid x_i]]
+\end{align*}
+
+Then, we have, $$\plim \ah - \beta = E[x_i x_i']^{-1} E[x_i z_i']$$
+
+\subsection*{Measurement Error in $Y$}
+
+\subsection*{Measurement Error in Regressors}
+
+\subsection*{Endogeneity}
+
+Occurs when the error term $\epsilon$ is correlated with the regressor $X$. Relax assumption that $E[\epsilon\mid X] = 0$. 
+
+In the example of hidden variable bias, where we modeled $Y = X\beta + \epsilon$, we write $\epsilon = Z \gamma + u$. Then, if there is a correlation between $X$ and $Z$, such that $E[Z\gamma + u \mid X] \neq 0$, resulting in endogeneity.
+
+We use \emph{instrumental variables} to resolve this issue. Assume $\exists$ $W$ of the same dimension as $X$ (i.e. \# instruments = \# regressors), such that $$E[X'W] \neq 0$$$$E[\epsilon\mid W] = 0$$
+
+Consider without derivation the estimator \begin{align*}
+  \bh_{iv} &= (W'X)^{-1}W'Y\\
+           &= (W'X)^{-1} W'(X\beta + \epsilon)\\
+           &= \beta + (W'X)^{-1}W\epsilon
+\end{align*}
+
+Examining the asymptotic distribution of $\bh_{iv}$, we get
+\begin{align*}
+  \sqrt{n}(\bh_{iv} - \beta) &= \sqrt{n}(W'X)^{-1}W\epsilon\\
+    &= (\frac{1}{n} \sum_{i=1}^n w_i x_i')^{-1}\sqrt{n}(\frac{1}{n} \sum_{i=1}^n w_i \epsilon_i)
+\end{align*}
+
+By the WLLN and the CMT, the first term converges in probability to $E[w_i x_i']^{-1}$. For the second term, the LLCLT gives 
+\begin{align*}
+\sqrt{n}(\frac{1}{n} \sum_{i=1}^n w_i \epsilon_i) &\to_D \norm(E[w_i \epsilon_i], E[w_i w_i' \epsilon_i \epsilon_i'] - E^2[w_i \epsilon_i])\\
+  &= \norm(E[w_i E[\epsilon_i \mid w_i]], E[w_i w_i' E[\epsilon_i \epsilon_i' \mid w_i]] - E^2[w_i E[\epsilon_i \mid w_i]])\\
+  &= \norm(0, \sigma^2 E[w_i w_i'])
+\end{align*}
+
+Then, the product $E[w_i x_i]^{-1} \norm(0, \sigma^2 E[w_i w_i'])$ converges in distribution to $$\sqrt{n}(\bh_{iv} - \beta) \to_D \norm(0, \sigma^2 E[w_i x_i']^{-1} E[w_i w_i'] (E[w_i x_i']^{-1})')$$
+
+The variance-covariance matrix estimator is given by $$\sh (\frac{1}{n} \sum_{i=1}^n w_i x_i')^{-1} (\frac{1}{n} \sum_{i=1}^n w_i w_i') (\frac{1}{n} \sum_{i=1}^n x_i w_i')^{-1}$$
+$$\sh = \frac{1}{n} \sum_{i=1}^n (Y_i - X_i \bh_{iv})^2$$
 
 \end{document}
